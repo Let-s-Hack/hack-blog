@@ -1,7 +1,39 @@
+import { useEffect, useState } from 'react';
 import Head from 'next/head'
 import styles from '../styles/Home.module.css'
+import { ApolloClient, InMemoryCache } from "@apollo/client";
+import { documentToReactComponents } from '@contentful/rich-text-react-renderer';
+import gql from 'graphql-tag';
 
 export default function Home() {
+  const [articles, changeArticle] = useState([]);
+
+  const client = new ApolloClient({
+    uri: `https://graphql.contentful.com/content/v1/spaces/${process.env.NEXT_PUBLIC_CONTENTFUL_SPACE_ID}`,
+    cache: new InMemoryCache(),
+    headers: {
+      authorization: `Bearer ${process.env.NEXT_PUBLIC_CONTENTFUL_ACCESS_TOKEN}`
+    },
+  });
+
+  useEffect(() => {
+    client.query({
+      query: gql`
+        query ($preview: Boolean) {
+          articleCollection (preview: $preview) {
+            items {
+              title
+              content {
+                json
+              }
+              createdAt
+            }
+          }
+        }
+      `,
+    }).then(res => changeArticle(res.data.articleCollection.items));
+  }, []);
+
   return (
     <div className={styles.container}>
       <Head>
@@ -14,40 +46,17 @@ export default function Home() {
           Welcome to <a href="https://nextjs.org">Next.js!</a>
         </h1>
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
+        <ul>
+          { articles.map((article, id) => {
+            return (
+              <li key={id}>
+                <strong>{ article.title }</strong>
+                <div>{ documentToReactComponents(article.content.json) }</div>
+                <span style={ { color: 'lightgray' } }>{ article.createdAt }</span>
+              </li>
+            )
+          }) }
+        </ul>
       </main>
 
       <footer className={styles.footer}>
