@@ -3,6 +3,7 @@ import Head from 'next/head'
 import styles from '../styles/Home.module.css'
 import { ApolloClient, InMemoryCache } from "@apollo/client";
 import { documentToReactComponents } from '@contentful/rich-text-react-renderer';
+import ReactMarkdwon from 'react-markdown';
 import gql from 'graphql-tag';
 
 export default function Home() {
@@ -27,6 +28,7 @@ export default function Home() {
                 json
               }
               createdAt
+              markdown
             }
           }
         }
@@ -53,6 +55,7 @@ export default function Home() {
                 <strong>{ article.title }</strong>
                 <div>{ documentToReactComponents(article.content.json) }</div>
                 <span style={ { color: 'lightgray' } }>{ article.createdAt }</span>
+                <ReactMarkdwon skipHtml={true}>{article.markdown}</ReactMarkdwon>
               </li>
             )
           }) }
