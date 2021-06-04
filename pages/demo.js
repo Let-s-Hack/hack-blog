@@ -6,7 +6,7 @@ import { documentToReactComponents } from '@contentful/rich-text-react-renderer'
 import ReactMarkdwon from 'react-markdown';
 import gql from 'graphql-tag';
 
-export default function Home() {
+export default function Demo() {
   const [articles, changeArticle] = useState([]);
 
   const client = new ApolloClient({
